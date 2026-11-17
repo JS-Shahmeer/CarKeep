@@ -4,14 +4,16 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastHost } from "../src/components";
+import { MigrationGate } from "../src/db/MigrationGate";
 import { ThemeProvider, useTheme } from "../src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -53,6 +55,7 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -69,7 +72,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <StatusBar style="auto" />
-          <RootStack />
+          <QueryClientProvider client={queryClient}>
+            <MigrationGate>
+              <RootStack />
+            </MigrationGate>
+          </QueryClientProvider>
           <ToastHost />
         </ThemeProvider>
       </SafeAreaProvider>
