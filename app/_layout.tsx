@@ -4,14 +4,18 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastHost } from "../src/components";
+import { MigrationGate } from "../src/db/MigrationGate";
+import { rebuildAllNotificationJobs } from "../src/features/reminders";
+import { logger } from "../src/lib/logger";
 import { ThemeProvider, useTheme } from "../src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -20,6 +24,14 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 function RootStack() {
   const theme = useTheme();
+
+  useEffect(() => {
+    // Brief 06: rebuild every scheduled alert on launch, which is the one
+    // moment that reliably covers "after reboot or timezone change" too.
+    rebuildAllNotificationJobs().catch(() => {
+      logger.error("notification_rebuild_failed");
+    });
+  }, []);
 
   return (
     <Stack
@@ -53,6 +65,7 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -69,7 +82,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <StatusBar style="auto" />
-          <RootStack />
+          <QueryClientProvider client={queryClient}>
+            <MigrationGate>
+              <RootStack />
+            </MigrationGate>
+          </QueryClientProvider>
           <ToastHost />
         </ThemeProvider>
       </SafeAreaProvider>
