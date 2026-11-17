@@ -26,3 +26,16 @@ export function parseDateOnly(value: string): Date {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Whole calendar days from `from` to `to` (positive when `to` is later),
+ * ignoring time-of-day so this is stable across the comparisons the
+ * reminder status rules need (R02, R05).
+ */
+export function daysBetween(from: Date, to: Date): number {
+  const start = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const end = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+  return Math.round((end.getTime() - start.getTime()) / MS_PER_DAY);
+}

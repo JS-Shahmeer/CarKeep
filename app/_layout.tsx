@@ -14,6 +14,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastHost } from "../src/components";
 import { MigrationGate } from "../src/db/MigrationGate";
+import { rebuildAllNotificationJobs } from "../src/features/reminders";
+import { logger } from "../src/lib/logger";
 import { ThemeProvider, useTheme } from "../src/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -22,6 +24,14 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 function RootStack() {
   const theme = useTheme();
+
+  useEffect(() => {
+    // Brief 06: rebuild every scheduled alert on launch, which is the one
+    // moment that reliably covers "after reboot or timezone change" too.
+    rebuildAllNotificationJobs().catch(() => {
+      logger.error("notification_rebuild_failed");
+    });
+  }, []);
 
   return (
     <Stack

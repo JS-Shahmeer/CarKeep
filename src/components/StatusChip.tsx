@@ -3,12 +3,15 @@ import { View } from "react-native";
 import { useTheme } from "../theme";
 import { Text } from "./Text";
 
-export type ReminderStatus = "upcoming" | "due_soon" | "overdue" | "completed" | "snoozed";
+export type ReminderStatus =
+  "upcoming" | "due_soon" | "overdue" | "reached" | "completed" | "snoozed";
 
+/** R05: the mileage criterion uses "Reached" wording, distinct from a date's "Overdue". */
 const LABEL: Record<ReminderStatus, string> = {
   upcoming: "Upcoming",
   due_soon: "Due Soon",
   overdue: "Overdue",
+  reached: "Reached",
   completed: "Completed",
   snoozed: "Snoozed",
 };
@@ -24,6 +27,7 @@ export function StatusChip({ status }: { status: ReminderStatus }) {
     upcoming: theme.colors.statusUpcoming,
     due_soon: theme.colors.statusDueSoon,
     overdue: theme.colors.statusOverdue,
+    reached: theme.colors.statusOverdue,
     completed: theme.colors.statusDone,
     snoozed: theme.colors.statusSnoozed,
   };

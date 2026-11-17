@@ -12,6 +12,8 @@ export interface DatePickerProps {
   required?: boolean;
   minimumDate?: Date;
   placeholder?: string;
+  /** Shows a "Clear" action next to the field, for an optional date (e.g. CK-04's due date). */
+  onClear?: () => void;
 }
 
 /**
@@ -25,6 +27,7 @@ export function DatePicker({
   required,
   minimumDate,
   placeholder = "Select a date",
+  onClear,
 }: DatePickerProps) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -33,10 +36,23 @@ export function DatePicker({
 
   return (
     <View style={{ gap: theme.spacing.xs }}>
-      <Text variant="label" muted>
-        {label}
-        {required ? " *" : ""}
-      </Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text variant="label" muted>
+          {label}
+          {required ? " *" : ""}
+        </Text>
+        {onClear && value && (
+          <Pressable
+            onPress={onClear}
+            accessibilityRole="button"
+            accessibilityLabel={`Clear ${label}`}
+          >
+            <Text variant="label" color={theme.colors.primary}>
+              Clear
+            </Text>
+          </Pressable>
+        )}
+      </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}

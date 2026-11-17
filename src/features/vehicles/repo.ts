@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { db, vehicles } from "../../db";
 import { generateId } from "../../lib/uuid";
 import { nowIso } from "../../lib/time";
+import { cancelNotificationsForVehicle } from "../reminders/repo";
 import type { Vehicle, VehicleFormValues } from "./domain";
 
 function toVehicle(row: typeof vehicles.$inferSelect): Vehicle {
@@ -69,6 +70,7 @@ export async function updateVehicle(input: UpdateVehicleInput): Promise<void> {
  * records.
  */
 export async function deleteVehicle(id: string): Promise<void> {
+  await cancelNotificationsForVehicle(id);
   await db.delete(vehicles).where(eq(vehicles.id, id));
 }
 
