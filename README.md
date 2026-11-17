@@ -19,19 +19,28 @@ Modules built so far:
 - **M4 — Vehicles and odometer:** Add/Edit/Delete Car (CK-01), a real Garage list, Car Detail
   with the odometer update flow and its "Correct previous reading?" confirmation (R04), and
   the Home screen gates first-run users to Welcome until a car exists.
+- **M5 — Service records and history:** Add Service Record (CK-03) with a service-type picker,
+  a real History tab filterable by car and type (CK-07), Record Detail, and a "Recent history"
+  list on Car Detail.
+- **M6 — Attachments:** pick a receipt photo or PDF, validated for type and size, copied into
+  app-private storage inside the same transaction as the service record (brief 04.1), previewed
+  or shared from Record Detail, and deleted along with its file when the record is deleted.
 
-Service records, reminders, attachments, notifications and release are still placeholder
-routes and land in modules 5–9 — see the
-[module breakdown doc](https://claude.ai/artifact/Ki4aXKXrzvy5UBRgdtLv2S).
+Reminders, notifications and release are still placeholder routes and land in modules 7–9 —
+see the [module breakdown doc](https://claude.ai/artifact/Ki4aXKXrzvy5UBRgdtLv2S).
 
 ### Testing notes
 
-This sandbox has no Android emulator or device, so modules 3–4 were verified by: TypeScript +
-ESLint across all new code, unit tests for the pure business rules (`tests/`), running the
-actual generated SQL migration against real SQLite to confirm the schema and the CK-08
-cascade-delete behaviour, and a browser smoke test of the UI/navigation layer via Playwright.
-The database itself was not exercised end-to-end in a real Expo/React Native runtime — do that
-on a device or emulator before considering modules 3–4 release-ready.
+This sandbox has no Android emulator or device, so modules 3–6 were verified by: TypeScript +
+ESLint across all new code, 17 unit tests for the pure business rules (`tests/`), and running
+the actual generated SQL migration against real SQLite to confirm the schema plus the CK-08
+(vehicle delete) and CK-07 (service-record delete cascades its document row) behaviour.
+Modules 1–2 were also smoke-tested in a browser via Playwright; from module 3 onward the app
+pulls in `expo-sqlite`, which this environment's web target can't bundle (a missing WASM asset
+— an `expo-sqlite`/web packaging gap, not an app bug), so the UI built in modules 3–6 has only
+been typechecked and statically reviewed, not clicked through. **Test the full Add Car → Add
+Service Record (with a receipt) → History → Delete flow on a real Android device or emulator**
+before treating modules 3–6 as release-ready.
 
 ## Getting started
 

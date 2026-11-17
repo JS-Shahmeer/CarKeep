@@ -68,7 +68,13 @@ export default function GarageScreen() {
       {vehicles.length > 0 && (
         <Fab
           accessibilityLabel="Add service or reminder"
-          onPress={() => router.push("/service/new")}
+          onPress={() =>
+            router.push(
+              vehicles.length === 1
+                ? { pathname: "/service/new", params: { vehicleId: vehicles[0].id } }
+                : "/service/new",
+            )
+          }
           style={{ position: "absolute", right: theme.spacing.lg, bottom: theme.spacing.lg }}
         />
       )}

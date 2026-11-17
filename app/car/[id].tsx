@@ -1,15 +1,21 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Pencil, Trash2 } from "lucide-react-native";
+import { ChevronRight, Pencil, Plus, Trash2 } from "lucide-react-native";
 import React, { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Button, Card, ComingSoon, ConfirmSheet, NumberField, Text } from "../../src/components";
 import { useDistanceUnit } from "../../src/features/settings/hooks";
+import {
+  SERVICE_TYPE_LABELS,
+  useServiceRecords,
+  type ServiceType,
+} from "../../src/features/services";
 import {
   odometerUpdateNeedsConfirmation,
   useDeleteVehicle,
   useUpdateOdometer,
   useVehicle,
 } from "../../src/features/vehicles";
+import { parseDateOnly } from "../../src/lib/time";
 import { displayToMeters, formatDistance } from "../../src/lib/units";
 import { useTheme } from "../../src/theme";
 
@@ -23,6 +29,7 @@ export default function CarDetailScreen() {
   const { unit } = useDistanceUnit();
   const updateOdometer = useUpdateOdometer();
   const deleteVehicle = useDeleteVehicle();
+  const { data: recentRecords = [] } = useServiceRecords({ vehicleId: id });
 
   const [odometerInput, setOdometerInput] = useState<number | undefined>(undefined);
   const [pendingCorrection, setPendingCorrection] = useState<number | undefined>(undefined);
@@ -129,10 +136,57 @@ export default function CarDetailScreen() {
       </Card>
 
       <Card>
-        <Text variant="subtitle">Recent history</Text>
-        <Text variant="body" muted style={{ marginTop: theme.spacing.xs }}>
-          Built in module 5 — Service records and history.
-        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: theme.spacing.sm,
+          }}
+        >
+          <Text variant="subtitle">Recent history</Text>
+          <Pressable
+            onPress={() =>
+              router.push({ pathname: "/service/new", params: { vehicleId: vehicle.id } })
+            }
+            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+          >
+            <Plus size={16} color={theme.colors.primary} />
+            <Text variant="label" color={theme.colors.primary}>
+              Add service
+            </Text>
+          </Pressable>
+        </View>
+        {recentRecords.length === 0 ? (
+          <Text variant="body" muted>
+            No service recorded yet for this car.
+          </Text>
+        ) : (
+          recentRecords.slice(0, 5).map((record, index) => (
+            <Pressable
+              key={record.id}
+              onPress={() => router.push(`/service/${record.id}`)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: theme.spacing.sm,
+                borderTopWidth: index === 0 ? 0 : 1,
+                borderTopColor: theme.colors.border,
+              }}
+            >
+              <View>
+                <Text variant="body">
+                  {SERVICE_TYPE_LABELS[record.type as ServiceType] ?? record.type}
+                </Text>
+                <Text variant="caption" muted>
+                  {parseDateOnly(record.serviceOn).toLocaleDateString()}
+                </Text>
+              </View>
+              <ChevronRight size={18} color={theme.colors.textMuted} />
+            </Pressable>
+          ))
+        )}
       </Card>
 
       <ConfirmSheet
