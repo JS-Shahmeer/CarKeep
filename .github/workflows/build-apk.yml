@@ -1,9 +1,13 @@
-name: Build debug APK
+name: Build APK
 
-# Builds a debug APK (unsigned debug keystore — fine for sideloading onto a
-# test device, not for a Play Store release) and publishes it as a GitHub
-# Release so it can be downloaded without a build step. Runs on every push
-# to main/merged-everything, and can be run manually from the Actions tab.
+# Builds a "release" APK — Hermes-compiled JS bundled into the APK itself,
+# so it runs standalone on a phone with no Metro dev server needed — and
+# publishes it as a GitHub Release so it can be downloaded without a build
+# step. Still signed with the Android debug key (expo prebuild falls back
+# to it when no release keystore is configured), so this is fine for
+# sideloading onto a test device, not for a Play Store submission. Runs on
+# every push to main/merged-everything, and can be run manually from the
+# Actions tab.
 on:
   push:
     branches: [main, merged-everything]
@@ -32,21 +36,23 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build debug APK
+      - name: Build release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Rename APK with build number
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/CarKeep-debug-${{ github.run_number }}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/CarKeep-${{ github.run_number }}.apk"
 
       - name: Publish GitHub Release with the APK attached
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: "CarKeep debug build #${{ github.run_number }}"
+          name: "CarKeep build #${{ github.run_number }}"
           body: |
-            Automated debug build from commit ${{ github.sha }}.
-            Debug build only — sideload for testing, not a signed release build.
+            Automated build from commit ${{ github.sha }}.
+            JS bundle is embedded (runs standalone, no dev server needed), but still
+            signed with the Android debug key — fine for sideloading onto a test
+            device, not a Play Store submission.
           files: dist/*.apk
