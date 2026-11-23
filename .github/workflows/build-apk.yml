@@ -36,6 +36,16 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
 
+      - name: Use a fixed debug keystore
+        # expo prebuild doesn't carry one over, so Gradle would otherwise
+        # generate a brand new random one on every run. Every build would
+        # then be signed differently, so Android refuses to install a
+        # newer build over an older one ("signatures don't match") unless
+        # the old one is uninstalled first — which wipes its local data.
+        # Using the same committed keystore every time keeps every build
+        # update-compatible with the last one.
+        run: cp keystores/debug.keystore android/app/debug.keystore
+
       - name: Build release APK
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
