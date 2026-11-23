@@ -41,7 +41,10 @@ export default function WelcomeScreen() {
         </Text>
       </View>
       <View style={{ padding: theme.spacing.xl }}>
-        <Button label="Add My Car" fullWidth onPress={() => router.push("/car/edit")} />
+        {/* replace, not push: Home already replaced itself with this screen, so a
+            push here would leave Welcome stuck under the new car's detail page —
+            pressing back after adding a car would dead-end back on "Add My Car". */}
+        <Button label="Add My Car" fullWidth onPress={() => router.replace("/car/edit")} />
       </View>
     </SafeAreaView>
   );
